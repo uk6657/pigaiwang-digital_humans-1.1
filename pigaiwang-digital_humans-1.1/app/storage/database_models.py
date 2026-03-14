@@ -218,6 +218,68 @@ class GroupVideoConfigModel(AbstractBaseModel):
 
 
 @register_model
+class StudentModel(AbstractBaseModel):
+    """Student login account and profile."""
+
+    __tablename__ = "student_account"
+
+    student_id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
+    group_id: Mapped[int] = mapped_column(
+        BigInteger, ForeignKey("demo_group.id"), nullable=False, index=True
+    )
+    username: Mapped[str] = mapped_column(
+        String(64), nullable=False, unique=True, index=True
+    )
+    password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
+    student_name: Mapped[str] = mapped_column(String(64), nullable=False)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    last_login_at: Mapped[object | None] = mapped_column(
+        BeijingTimeZone(), nullable=True
+    )
+
+
+@register_model
+class StudentTaskModel(AbstractBaseModel):
+    """Per-student task assignment within a group."""
+
+    __tablename__ = "student_task"
+    __table_args__ = (
+        UniqueConstraint("student_id", name="uq_student_task_student_id"),
+    )
+
+    id: Mapped[int] = mapped_column(
+        BigInteger, primary_key=True, autoincrement=True, nullable=False
+    )
+    group_id: Mapped[int] = mapped_column(
+        BigInteger, ForeignKey("demo_group.id"), nullable=False, index=True
+    )
+    student_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("student_account.student_id"), nullable=False, index=True
+    )
+    task_content: Mapped[str] = mapped_column(Text, nullable=False)
+
+
+@register_model
+class StudentScriptModel(AbstractBaseModel):
+    """Per-student ordered script lines."""
+
+    __tablename__ = "student_script"
+    __table_args__ = (
+        UniqueConstraint("student_id", "script_order", name="uq_student_script_order"),
+    )
+
+    id: Mapped[int] = mapped_column(
+        BigInteger, primary_key=True, autoincrement=True, nullable=False
+    )
+    student_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("student_account.student_id"), nullable=False, index=True
+    )
+    script_order: Mapped[int] = mapped_column(Integer, nullable=False)
+    question: Mapped[str] = mapped_column(Text, nullable=False)
+    answer: Mapped[str] = mapped_column(Text, nullable=False)
+
+
+@register_model
 class SystemLogModel(AbstractBaseModel):
     """System log persisted by the async logger."""
 

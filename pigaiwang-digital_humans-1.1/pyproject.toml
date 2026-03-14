@@ -50,6 +50,7 @@ dependencies = [
     "cryptography>=46.0.3",
     "honcho>=2.0.0",
     "openpyxl>=3.1.5",
+    "aiosqlite>=0.22.1",
 ]
 [[tool.uv.index]]
 name = "tsinghua"

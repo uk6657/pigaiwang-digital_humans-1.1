@@ -22,6 +22,7 @@ from loguru import logger
 from app.common.time_ import human_duration
 from app.configs import base_configs
 from app.services.demo_service import demo_service
+from app.services.student_service import student_service
 from app.storage import init_db, stop_db
 from app.utils.async_worker_id_allocator import worker_id_allocator
 from app.utils.handle_exceptions import (
@@ -110,6 +111,7 @@ async def lifespan(app: FastAPI):
 
         # 初始化事件循环级异常处理器
         await demo_service.bootstrap()
+        await student_service.bootstrap()
         await init_loop_exc_handler()
 
         print("🔍 开始动态加载路由模块...")
