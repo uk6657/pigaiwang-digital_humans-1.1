@@ -1,0 +1,111 @@
+[project]
+name = "ai-manhua-backend"
+version = "0.1.0"
+description = "AI 漫剧智能体后端"
+readme = "README.md"
+requires-python = ">=3.10,<3.14"
+dependencies = [
+    # FastAPI 基础（必须）
+    "fastapi>=0.115.0",
+    "uvicorn>=0.30.0",
+    "pydantic[email]>=2.8.0",
+    "python-multipart>=0.0.9",          # 文件上传（导入剧本/图片）
+    # 数据库 & 异步（必须）
+    "sqlalchemy>=2.0.0",
+    "alembic>=1.13.0",
+    "asyncpg>=0.29.0",
+    # 认证 & 安全（必须）
+    "pyjwt>=2.8.0",
+    "bcrypt>=4.2.0",
+    "python-jose[cryptography]>=3.3.0",
+    # 配置 & 日志 & 工具（强烈推荐）
+    "python-dotenv>=1.0.0",
+    "pydantic-settings>=2.0.0",
+    "loguru>=0.7.0",
+    # 异步任务队列（视频/图片生成必备）
+    "taskiq>=0.11.0",
+    "taskiq-redis>=1.0.0",
+    "redis>=5.0.0",
+    "snowflake-id==1.0.2",
+    # 文件 & 对象存储（图片/视频/音频）
+    "aiofiles>=23.0.0",
+    "aioboto3>=12.0.0",                 # MinIO / AWS S3
+    # 图像处理（多宫格切分、高清放大）
+    "pillow>=10.0.0",
+    # 视频/音频合成 & 处理（FFmpeg 是核心）
+    "ffmpeg-python>=0.2.0",             # Python 调用 FFmpeg
+    "pydub>=0.25.0",                    # 音频剪辑、格式转换（可选 moviepy）
+    # AI 调用（核心大模型 & 生成服务）
+    "openai>=1.0.0",                    # DeepSeek-V3（兼容 OpenAI 接口）
+    "anthropic>=0.30.0",                # 如果用 Claude 系列（可选）
+    "tenacity>=8.0.0",                  # API 调用自动重试（非常推荐）
+    # 可选（视情况加）
+    "httpx>=0.27.0",                    # 调用其他 HTTP API（如 Qwen、通义万相）
+    "numpy>=1.26.0",                    # 图像/数组处理（如果用 ComfyUI 或本地模型）
+    # 新增：手机号解析与验证（解决 No module named 'phonenumbers'）
+    "phonenumbers>=8.13.0",          # ← 这里添加的这一行
+    "pydantic-extra-types>=2.11.0",
+    "pandas>=2.3.3",
+    "captcha>=0.7.1",
+    "cryptography>=46.0.3",
+    "honcho>=2.0.0",
+    "openpyxl>=3.1.5",
+]
+[[tool.uv.index]]
+name = "tsinghua"
+url = "https://pypi.tuna.tsinghua.edu.cn/simple"
+default = true
+
+[dependency-groups]
+dev = [
+    "commitizen==4.9.1",
+    "pdm==2.25.9",
+    "pre-commit==4.3.0",
+    "pyinstaller>=6.10.0,<6.14.0",   # 锁定到兼容 3.10–3.13 的版本
+    "pytest==8.4.2",
+    "pytest-asyncio==1.2.0",
+    "ruff>=0.14.9",
+    "ty==0.0.1a21",
+    "virtualenv==20.34.0",
+]
+
+[tool.ruff]
+target-version = "py310"
+
+[tool.ruff.lint]
+# E/F/W: 基础错误与警告
+# I: import 排序
+# D: pydocstyle（docstring）
+select = ["E", "F", "W", "I", "D"]
+
+# 老项目/团队推进时，先别强制“每个模块/包/__init__ 都要 docstring”
+ignore = [
+ # "D100",
+ # "D104",
+ # "D107",
+  "E501",
+  "D415",  # First line should end with a period
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["app"]
+
+[tool.ruff.lint.per-file-ignores]
+"app/api/routers/*.py" = ["D101", "D102", "D103", "D205"]
+"app/api/form_response/*.py" = ["D101", "D102", "D103", "D205"]
+"app/api/form_validation/*.py" = ["D101", "D102", "D103", "D205"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.ty.rules]
+possibly-unbound-attribute = "ignore"
+unresolved-reference = "ignore"
+invalid-return-type = "ignore"
+invalid-parameter-default = "ignore"
+unresolved-import = "ignore"
+call-non-callable = "ignore"

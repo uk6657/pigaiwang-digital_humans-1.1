@@ -1,0 +1,154 @@
+# Byte编译的Python文件
+__pycache__/
+*.py[cod]
+*$py.class
+
+# ruff相关文件
+.ruff_cahce/
+
+# 虚拟环境
+venv/
+env/
+ENV/
+.venv/
+test0208/
+.ENV/
+venvcxf/
+aiTrainVenv/
+logs/
+data/
+
+# 安装包
+*.egg
+*.egg-info/
+dist/
+build/
+eggs/
+
+# 缓存文件
+*.log
+*.pot
+*.pyc
+*.pyo
+*.pyd
+*.sqlite3
+*.tmp
+*.out
+*.pid
+*.swp
+
+# 配置文件或环境变量文件
+.env.*
+*.ini
+*.cfg
+*.bak
+conf/.env
+
+# IDE相关文件
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Jupyter Notebook的临时文件
+.ipynb_checkpoints/
+
+# 测试输出
+coverage/
+*.cover
+.hypothesis/
+.pytest_cache/
+
+# 文档生成
+docs/_build/
+*.rst
+
+# 数据库和数据文件
+*.db
+*.sql
+*.csv
+*.tsv
+*.dat
+*.data
+*.jsonl
+
+# 图像和其他大文件
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.svg
+*.ico
+
+# 临时文件
+*.tmp
+*.bak
+*.swp
+*.DS_Store
+Thumbs.db
+
+# 操作系统生成的文件
+.DS_Store
+desktop.ini
+
+# 错误报告
+*.stackdump
+*.core
+
+# 本地开发工具文件
+*.coverage
+*.pkl
+uv.lock.bak
+main.spec
+
+# Docker相关
+docker-compose.override.yml
+
+# 如果使用了某些框架，添加特定的文件夹或文件
+# Flask
+instance/
+*.pyc
+
+# Django
+*.log
+db.sqlite3
+media/
+staticfiles/
+
+# 如果有其他需要忽略的文件或目录，可以在这里添加
+
+# 忽略 app 目录及其子目录下的所有 .c 文件
+app/**/*.c
+static/
+test/
+app/api/routers/text_router.py
+log_count.txt
+
+# licence相关
+licence_code.py
+
+# 忽略 docker 目录下所有文件
+docker/*
+
+# 但保留以下文件
+!docker/.dockerignore
+!docker/Dockerfile
+!docker/docker_build.sh
+
+# 忽略 deploy/docker 目录下所有文件
+deploy/docker/*
+
+# 允许 backend，servers 目录被追踪
+!deploy/docker/backend/
+!deploy/docker/servers/
+
+deploy/docker/backend/*
+deploy/docker/servers/*
+
+# 但保留以下文件
+!deploy/docker/backend/docker-compose.yml
+!deploy/docker/servers/docker-compose.yml
+
+
+# claude code相关
+CLAUDE.md

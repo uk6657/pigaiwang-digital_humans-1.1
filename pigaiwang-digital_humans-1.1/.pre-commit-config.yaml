@@ -1,0 +1,46 @@
+default_install_hook_types:
+  - pre-commit
+  - commit-msg
+
+repos:
+  # - repo: ...
+
+  - repo: https://github.com/compilerla/conventional-pre-commit
+    rev: v4.3.0
+    hooks:
+      - id: conventional-pre-commit
+        stages: [commit-msg]
+        args: [--strict]
+
+  - repo: local
+    hooks:
+      # Ruff Check (Linter) - 负责检查代码质量并自动修复
+      - id: ruff-check
+        name: ruff check
+        # 核心修改：加上了 --fix
+        entry: uv run ruff check --fix --force-exclude
+        language: system
+        types: [python]
+        verbose: true
+        always_run: true
+        
+      # Ruff Format (Formatter) - 负责代码美化
+      - id: ruff-format
+        name: ruff format
+        entry: uv run ruff format --force-exclude
+        language: system
+        types: [python]
+        verbose: true
+        always_run: true
+
+  - repo: local
+    hooks:
+      - id: ty
+        name: ty check
+        entry: uv run ty check . # --ignore unresolved-import
+        language: system
+        types: [python]
+        pass_filenames: false
+        verbose: true
+        always_run: true
+        # additional_dependencies: [ty]

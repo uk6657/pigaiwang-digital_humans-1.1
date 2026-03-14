@@ -1,0 +1,29 @@
+
+services:
+  # epc 服务后端服务
+  epc-server-backend:
+    image: epc-backend:test-v1.0    # 改成真实镜像名
+    container_name: epc-server-backend
+    privileged: true
+    volumes: 
+      # 用于校验
+      - /sys:/sys:ro
+      - /proc/cpuinfo:/proc/cpuinfo:ro
+      - /etc/machine-id:/etc/machine-id:ro
+      - /dev/mem:/dev/mem:ro
+      # 挂载目录
+      - ./backend_logs:/epc_backend/logs                    # 挂载日志目录
+      - ./backend_data:/epc_backend/data                    # 挂载数据目录
+      - ./backend_license.bin:/epc_backend/license.bin      # 挂载license文件
+      - ./backend_data.bin:/epc_backend/data.bin            # 挂载校验文件
+      - ./backend_conf:/epc_backend/conf                    # 挂载配置文件
+    # extra_hosts:                     # 如果使用本地的redis, pgsql, epc_ml则取消注释，并注释掉下面两处和networks相关的注释
+    #   - "host.docker.internal:host-gateway"
+    networks:
+      - epc-net
+    ports:
+      - "8089:8089"
+
+networks: 
+  epc-net:
+    driver: bridge

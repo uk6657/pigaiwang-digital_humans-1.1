@@ -1,0 +1,75 @@
+version: '3.8'
+
+services:
+
+  # ai-comic Redis 服务（缓存）
+  ai-comic-redis:
+    image: redis:7.2-alpine
+    container_name: ai-comic-redis
+    command: redis-server --appendonly yes --requirepass RJZy5by5Y2=qwNwjiPe@jms(%0(e+kKF
+    volumes:
+      - ./ai-comic-redis-data:/data
+    networks:
+      - ai-comic-net
+    ports:
+      - "1166:6379"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+
+  # ai-comic PostgreSQL 服务（数据库）
+  ai-comic-postgres:
+    image: ai_postgre:v1.0
+    container_name: ai-comic-postgres
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=xK9#mP$vL2!qR&nW
+      - POSTGRES_DB=ai_comic
+    command: >
+      postgres
+      -c max_connections=100
+      -c shared_buffers=128MB   # 你的服务器内存只有1GB，建议调低避免 OOM
+      -c work_mem=8MB
+    networks:
+      - ai-comic-net
+    ports:
+      - "1167:5432"
+    volumes:
+      - ./ai-comic-postgres-data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  ai-comic-rustfs:
+    image: rustfs/rustfs:1.0.0-alpha.63
+    container_name: ai-comic-rustfs
+    restart: unless-stopped
+    ports:
+      - "1168:9000"   # S3 API
+      - "1169:9001"
+    volumes:
+      - ./ai-comic-rustfs-data:/data
+      - ./ai-comic-rustfs-logs:/logs
+    environment:
+      - RUSTFS_ACCESS_KEY=AKIAIOSFODNN7EXAMPLE
+      - RUSTFS_SECRET_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+      - RUSTFS_VOLUMES=/data
+      - RUSTFS_CONSOLE_ENABLE=true
+      - RUSTFS_ADDRESS=0.0.0.0:9000
+      - RUSTFS_MODE=single                  # 单节点模式（适合测试/小型部署）
+    user: "10001:10001"
+    networks:
+      - ai-comic-net
+    # depends_on:   # 如果你的后端需要 RustFS，先启动它
+    #   - ai-comic-postgres
+    #   - ai-comic-redis
+
+networks:
+  ai-comic-net:
+    driver: bridge
