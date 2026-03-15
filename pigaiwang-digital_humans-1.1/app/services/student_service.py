@@ -29,25 +29,50 @@ class _SeedStudent:
 
 
 def _build_seed_students() -> tuple[_SeedStudent, ...]:
-    students: list[_SeedStudent] = []
-    mapping = {
-        1001: range(11, 19),
-        1002: range(21, 29),
-        1003: range(31, 39),
-        1004: range(41, 49),
-    }
-    for group_id, student_ids in mapping.items():
-        for student_id in student_ids:
-            students.append(
-                _SeedStudent(
-                    student_id=student_id,
-                    group_id=group_id,
-                    username=f"student{student_id}",
-                    password="12345678",
-                    student_name=f"name{student_id}",
-                )
-            )
-    return tuple(students)
+    seed_data = (
+        (1001, 2404050130, "常玉凤"),
+        (1001, 2404050227, "高境"),
+        (1001, 2404050212, "高天航"),
+        (1001, 2404050229, "郭福齐"),
+        (1001, 2404050220, "韩萍"),
+        (1001, 2404050223, "姜皓"),
+        (1001, 2404050205, "李春雨"),
+        (1001, 2404050113, "李洋"),
+        (1002, 2404050120, "刘遥"),
+        (1002, 2404050119, "刘思思"),
+        (1002, 2404050105, "吕思熠"),
+        (1002, 2404050114, "孟夕航"),
+        (1002, 2404050122, "孟雨桐"),
+        (1002, 2404050219, "秦梓帆"),
+        (1002, 2404050218, "汝绍欣"),
+        (1002, 2404050215, "宋依阳"),
+        (1003, 2304050131, "苏炎"),
+        (1003, 2404050101, "孙静航"),
+        (1003, 2404050111, "孙潇轩"),
+        (1003, 2404050109, "谭童"),
+        (1003, 2404050203, "王顺雄"),
+        (1003, 2404050217, "王逸飞"),
+        (1003, 2404050224, "王海贺"),
+        (1003, 2404050129, "魏慧柔"),
+        (1004, 2404050222, "吴琰"),
+        (1004, 2404050210, "武佳仪"),
+        (1004, 2404050201, "杨淳"),
+        (1004, 2404050121, "杨子涵"),
+        (1004, 2404050125, "张祎悦"),
+        (1004, 2404050216, "周弘序"),
+        (1004, 2404050202, "朱邵旺"),
+        (1004, 2404010227, "张庭玮"),
+    )
+    return tuple(
+        _SeedStudent(
+            student_id=student_id,
+            group_id=group_id,
+            username=str(student_id),
+            password="12345678",
+            student_name=student_name,
+        )
+        for group_id, student_id, student_name in seed_data
+    )
 
 
 DEFAULT_STUDENTS = _build_seed_students()
@@ -63,7 +88,7 @@ class StudentService:
         await self.ensure_default_students()
 
     async def ensure_default_students(self) -> None:
-        """Create seeded student accounts if they do not exist."""
+        """Create seeded student accounts when the student id is missing."""
 
         async with AsyncSessionLocal() as session:
             changed = False
@@ -85,23 +110,6 @@ class StudentService:
                             is_active=True,
                         )
                     )
-                    changed = True
-                    continue
-
-                if student.group_id != seed.group_id:
-                    student.group_id = seed.group_id
-                    changed = True
-                if student.username != seed.username:
-                    student.username = seed.username
-                    changed = True
-                if not validation_service.verify_password(seed.password, student.password_hash):
-                    student.password_hash = validation_service.get_hashed_password(seed.password)
-                    changed = True
-                if not student.student_name:
-                    student.student_name = seed.student_name
-                    changed = True
-                if not student.is_active:
-                    student.is_active = True
                     changed = True
 
             if changed:
@@ -217,11 +225,6 @@ class StudentService:
                     student = students.get(student_id)
                     if student is None:
                         raise HTTPException(status_code=400, detail=f"Invalid student id: {student_id}")
-                    if student.group_id != group_id:
-                        raise HTTPException(
-                            status_code=400,
-                            detail=f"Student {student_id} does not belong to group {group_id}",
-                        )
                     if student_id in seen_students:
                         raise HTTPException(
                             status_code=400,
@@ -253,6 +256,7 @@ class StudentService:
                 group_id = int(group_payload["groupId"])
                 for student_payload in group_payload.get("students", []):
                     student_id = int(student_payload["studentId"])
+                    students[student_id].group_id = group_id
                     students[student_id].student_name = student_payload["studentName"].strip()
                     session.add(
                         StudentTaskModel(

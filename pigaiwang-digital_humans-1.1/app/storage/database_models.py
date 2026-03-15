@@ -223,7 +223,7 @@ class StudentModel(AbstractBaseModel):
 
     __tablename__ = "student_account"
 
-    student_id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
+    student_id: Mapped[int] = mapped_column(BigInteger, primary_key=True, nullable=False)
     group_id: Mapped[int] = mapped_column(
         BigInteger, ForeignKey("demo_group.id"), nullable=False, index=True
     )
@@ -254,7 +254,7 @@ class StudentTaskModel(AbstractBaseModel):
         BigInteger, ForeignKey("demo_group.id"), nullable=False, index=True
     )
     student_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("student_account.student_id"), nullable=False, index=True
+        BigInteger, ForeignKey("student_account.student_id"), nullable=False, index=True
     )
     task_content: Mapped[str] = mapped_column(Text, nullable=False)
 
@@ -272,7 +272,7 @@ class StudentScriptModel(AbstractBaseModel):
         BigInteger, primary_key=True, autoincrement=True, nullable=False
     )
     student_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("student_account.student_id"), nullable=False, index=True
+        BigInteger, ForeignKey("student_account.student_id"), nullable=False, index=True
     )
     script_order: Mapped[int] = mapped_column(Integer, nullable=False)
     question: Mapped[str] = mapped_column(Text, nullable=False)
