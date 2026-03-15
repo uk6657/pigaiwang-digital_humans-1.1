@@ -227,6 +227,12 @@ class StudentService:
                             status_code=400,
                             detail=f"Duplicate student task in group {group_id}: {student_id}",
                         )
+                    student_name = student_payload["studentName"].strip()
+                    if not student_name:
+                        raise HTTPException(
+                            status_code=400,
+                            detail=f"Student name is required for student {student_id}",
+                        )
                     seen_students.add(student_id)
 
             for student_key, lines in scripts_payload.items():
@@ -246,10 +252,12 @@ class StudentService:
             for group_payload in tasks_payload:
                 group_id = int(group_payload["groupId"])
                 for student_payload in group_payload.get("students", []):
+                    student_id = int(student_payload["studentId"])
+                    students[student_id].student_name = student_payload["studentName"].strip()
                     session.add(
                         StudentTaskModel(
                             group_id=group_id,
-                            student_id=int(student_payload["studentId"]),
+                            student_id=student_id,
                             task_content=student_payload["task"],
                         )
                     )

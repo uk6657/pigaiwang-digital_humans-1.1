@@ -39,6 +39,7 @@ class StudentTaskEntryRequest(BaseModel):
     """Task entry for one student."""
 
     studentId: int = Field(..., description="Student id such as 11")
+    studentName: str = Field(..., min_length=1, max_length=64, description="Student name")
     task: str = Field(..., min_length=1)
 
 

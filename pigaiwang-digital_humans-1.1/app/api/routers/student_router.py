@@ -132,6 +132,25 @@ async def save_task_script_batch(
 
 
 @router.get(
+    "/tasks/config-batch",
+    response_model=BaseResponseModel[TaskScriptBatchResponseModel],
+    summary="Get all student tasks and scripts",
+)
+async def get_task_script_batch(
+    claims=Depends(get_current_demo_claims),
+):
+    """Return the full stored task/script payload for any authenticated token."""
+
+    payload = await student_service.get_full_task_script_payload()
+    return {
+        "res": True,
+        "code": 200,
+        "message": "Task and script config fetched successfully",
+        "data": payload,
+    }
+
+
+@router.get(
     "/groups/{group_id}/tasks",
     response_model=BaseResponseModel[GroupTaskResponseModel],
     summary="Get all tasks for one group",
@@ -149,4 +168,3 @@ async def get_group_tasks(
         "message": "Group tasks fetched successfully",
         "data": payload,
     }
-
