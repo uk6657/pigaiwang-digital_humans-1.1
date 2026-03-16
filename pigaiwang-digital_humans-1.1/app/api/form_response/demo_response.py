@@ -66,3 +66,38 @@ class DemoGroupBatchConfigResponseModel(BaseModel):
     """Batch group config response."""
 
     groups: list[DemoGroupVideoConfigResponseModel] = Field(description="Saved group configs")
+
+
+class VideoCacheItemResponseModel(BaseModel):
+    """Video cache/download metadata for local sync clients."""
+
+    video_id: int = Field(description="Video id")
+    external_video_id: str | None = Field(default=None, description="External video id")
+    video_name: str = Field(description="Video name")
+    file_name: str = Field(description="Original file name")
+    file_size_bytes: int | None = Field(default=None, description="File size in bytes")
+    mime_type: str | None = Field(default=None, description="Mime type")
+    updated_at: datetime = Field(description="Last metadata update time")
+    download_url: str = Field(description="Direct download URL for the source file")
+
+
+class VideoCacheManifestResponseModel(BaseModel):
+    """Cache manifest for all downloadable videos."""
+
+    videos: list[VideoCacheItemResponseModel] = Field(description="All downloadable videos")
+
+
+class VideoCacheVersionItemResponseModel(BaseModel):
+    """Compact video version information for local cache checks."""
+
+    video_id: int = Field(description="Video id")
+    updated_at: datetime = Field(description="Last metadata update time")
+    file_size_bytes: int | None = Field(default=None, description="File size in bytes")
+
+
+class VideoCacheVersionResponseModel(BaseModel):
+    """Compact version list for cache synchronization."""
+
+    videos: list[VideoCacheVersionItemResponseModel] = Field(
+        description="Compact cache version info"
+    )

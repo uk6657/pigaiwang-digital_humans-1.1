@@ -10,6 +10,7 @@ from pathlib import Path
 from uuid import uuid4
 
 from fastapi import HTTPException, UploadFile, status
+from fastapi.responses import FileResponse
 from sqlalchemy import select, update
 
 from app.configs import base_configs
@@ -358,6 +359,111 @@ class DemoService:
             if video is None:
                 raise HTTPException(status_code=404, detail="Video not found")
             return video
+
+    async def list_cache_manifest(self) -> list[dict]:
+        """Return all downloadable videos for local cache clients."""
+
+        await self.bootstrap()
+        async with AsyncSessionLocal() as session:
+            stmt = (
+                select(VideoModel)
+                .where(
+                    VideoModel.is_deleted == False,  # noqa: E712
+                    VideoModel.is_available == True,  # noqa: E712
+                )
+                .order_by(VideoModel.id.asc())
+            )
+            videos = (await session.execute(stmt)).scalars().all()
+            videos = [video for video in videos if self.is_real_uploaded_video(video)]
+            return [
+                {
+                    "video_id": video.id,
+                    "external_video_id": video.external_video_id,
+                    "video_name": video.video_name,
+                    "file_name": video.file_name,
+                    "file_size_bytes": video.file_size_bytes,
+                    "mime_type": video.mime_type,
+                    "updated_at": video.updated_at,
+                    "download_url": self.get_download_url(video.id),
+                }
+                for video in videos
+            ]
+
+    @staticmethod
+    def is_real_uploaded_video(video: VideoModel) -> bool:
+        """Return whether a video points to a real uploaded local file."""
+
+        if not video.is_available or not video.file_path:
+            return False
+        if str(video.file_path).startswith("virtual://"):
+            return False
+        return Path(video.file_path).exists()
+
+    async def list_downloadable_manifest(self) -> list[dict]:
+        """Return only videos that are truly downloadable from local storage."""
+
+        await self.bootstrap()
+        async with AsyncSessionLocal() as session:
+            stmt = (
+                select(VideoModel)
+                .where(
+                    VideoModel.is_deleted == False,  # noqa: E712
+                    VideoModel.is_available == True,  # noqa: E712
+                )
+                .order_by(VideoModel.id.asc())
+            )
+            videos = (await session.execute(stmt)).scalars().all()
+            downloadable_videos = [
+                video for video in videos if self.is_real_uploaded_video(video)
+            ]
+            return [
+                {
+                    "video_id": video.id,
+                    "external_video_id": video.external_video_id,
+                    "video_name": video.video_name,
+                    "file_name": video.file_name,
+                    "file_size_bytes": video.file_size_bytes,
+                    "mime_type": video.mime_type,
+                    "updated_at": video.updated_at,
+                    "download_url": self.get_download_url(video.id),
+                }
+                for video in downloadable_videos
+            ]
+
+    async def list_cache_versions(self) -> list[dict]:
+        """Return compact cache version information for all downloadable videos."""
+
+        await self.bootstrap()
+        async with AsyncSessionLocal() as session:
+            stmt = (
+                select(VideoModel)
+                .where(
+                    VideoModel.is_deleted == False,  # noqa: E712
+                    VideoModel.is_available == True,  # noqa: E712
+                )
+                .order_by(VideoModel.id.asc())
+            )
+            videos = (await session.execute(stmt)).scalars().all()
+            videos = [video for video in videos if self.is_real_uploaded_video(video)]
+            return [
+                {
+                    "video_id": video.id,
+                    "updated_at": video.updated_at,
+                    "file_size_bytes": video.file_size_bytes,
+                }
+                for video in videos
+            ]
+
+    async def download_video_file(self, video_id: int) -> FileResponse:
+        """Return the original uploaded video file as a direct download."""
+
+        file_path = await self.get_video_path(video_id)
+        media_type = mimetypes.guess_type(file_path.name)[0] or "application/octet-stream"
+        return FileResponse(
+            path=file_path,
+            media_type=media_type,
+            filename=file_path.name,
+        )
 
     async def get_group_video_config(self, group_id: int) -> dict:
         """Return saved group configuration and ordered video details."""
@@ -759,6 +865,11 @@ class DemoService:
         """Return the direct mp4 stream URL for a video."""
 
         return f"{base_configs.API_PREFIX}/demo/videos/{video_id}/stream"
+
+    def get_download_url(self, video_id: int) -> str:
+        """Return the direct download URL for the original source file."""
+
+        return f"{base_configs.API_PREFIX}/videos/{video_id}/download"
 
     def get_default_playback_url(self, video_id: int) -> str:
         """Return HLS URL when available, otherwise direct mp4 stream."""
